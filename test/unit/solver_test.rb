@@ -32,30 +32,52 @@ class SolverTest < Minitest::Test
   end
 
   def test_solve_with_empty
-    res = PartialSolution.new make_board, 0
-    assert_equal [make_board(1), 1, { 0 => 0 }], res.next.output
+    sol = PartialSolution.new make_board, 0
+    assert_equal [make_board(1), 1, { 0 => 0 }], sol.next.raw
   end
 
   def test_solve_only_increases_position_when_current_field_is_filled
-    res = PartialSolution.new make_board(1, 2), 0
-    assert_equal [make_board(1, 2), 1, {}], res.next.output
+    sol = PartialSolution.new make_board(1, 2), 0
+    assert_equal [make_board(1, 2), 1, {}], sol.next.raw
   end
 
   def test_solve_with_non_empty_leading_fields
-    res = PartialSolution.new make_board(1, 2, 3), 3
-    assert_equal [make_board(1, 2, 3, 1), 3, { 3 => 0 }], res.next.output
+    sol = PartialSolution.new make_board(1, 2, 3), 3
+    assert_equal [make_board(1, 2, 3, 1), 3, { 3 => 0 }], sol.next.raw
   end
 
   def test_solve_increase_digit_while_board_is_invalid
-    res = PartialSolution.new make_board(1, 2, 3, 3), 3
-    assert_equal [make_board(1, 2, 3, 4), 4, { 3 => 3 }], res.next.output
+    sol = PartialSolution.new make_board(1, 2, 3, 3), 3, { 3 => 2 }
+    assert_equal [make_board(1, 2, 3, 4), 4, { 3 => 3 }], sol.next.raw
   end
 
   def test_solve_backtrack_when_no_solution_is_possible
     input_board = make_board(1, 2, 3, 4, 5, 6, 7, 8, 9, 4, 5, 6, 1, 2, 3, 9)
     output_board = make_board(1, 2, 3, 4, 5, 6, 7, 8, 9, 4, 5, 6, 1, 2, 3)
-    res = PartialSolution.new make_board(1, 2, 3, 4, 5, 6, 7, 8, 9, 4, 5, 6, 1, 2, 3), 15, 14 => 2, 15 => 8
-    assert_equal [output_board, 14, { 14 => 2 }], res.next.output
+    sol = PartialSolution.new make_board(1, 2, 3, 4, 5, 6, 7, 8, 9, 4, 5, 6, 1, 2, 3), 15, 14 => 2, 15 => 8
+    assert_equal [output_board, 14, { 14 => 2 }], sol.next.raw
+  end
+
+  def test_solve_next_is_not_mutated
+    sol = PartialSolution.new make_board
+    origin_sol = sol.dup
+    next_solution = sol.next
+    assert_equal next_solution, sol.next
+    assert_equal origin_sol, sol
+  end
+
+  def test_solve_next_method_chaining
+    expected = [[1, 2, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil,
+                 nil, nil, nil, nil, nil, nil, nil, nil, nil], 2, {0=>0, 1=>1}]
+    sol = PartialSolution.new make_board
+    assert_equal expected, sol.next.next.next.raw
   end
 
 end

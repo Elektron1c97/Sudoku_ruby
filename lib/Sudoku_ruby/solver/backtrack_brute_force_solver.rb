@@ -5,18 +5,18 @@ module BacktrackBruteForceSolver
     sol = PartialSolution.new(input)
     sol = sol.next until sol.solution? || sol.unsolvable?
     if sol.to_a.include?(nil)
-      false
+      nil
     else
       sol.to_a
     end
   end
-  
+
 end
 
 class PartialSolution
 
   def initialize(arr_to_solve, position = 0, inserted_at = {})
-    @arr = arr_to_solve.dup
+    @arr = arr_to_solve
     @position = position
     @inserted_at = inserted_at
     @length = Math.sqrt(arr_to_solve.length)
@@ -24,6 +24,7 @@ class PartialSolution
   end
 
   def next
+    arr = @arr.dup
     if changable_field_at_current_position?
       number_index = if @inserted_at.key?(@position)
                     @inserted_at[@position] + 1
@@ -31,24 +32,27 @@ class PartialSolution
                     0
                   end
       if valid_number?(@numbers[number_index]) # if a number can be inserted
-        @arr[@position] = @numbers[number_index]
-        @inserted_at[@position] = number_index
-        temp_test_board = SudokuRuby::Board.new(@arr, @length)
+        arr[@position] = @numbers[number_index]
+        inserted_at = @inserted_at.merge(@position => number_index)
+        temp_test_board = SudokuRuby::Board.new(arr, @length)
         if temp_test_board.valid?
-          return PartialSolution.new @arr, @position + 1 ,@inserted_at
+          return build_next_partial_solution arr, @position + 1, inserted_at
         else
-          return PartialSolution.new @arr, @position, @inserted_at
+          return build_next_partial_solution arr, @position, inserted_at
         end
       else
         # Backtracking
-        @arr[@position] = nil
-        @inserted_at.delete(@inserted_at.keys.last)
-        @position = @inserted_at.keys.last
-        return PartialSolution.new @arr, @position, @inserted_at
+        arr[@position] = nil
+        inserted_at = @inserted_at.reject { |k, _v| k == @inserted_at.keys.last }
+        return build_next_partial_solution arr, inserted_at.keys.last, inserted_at
       end
     else
-      return PartialSolution.new @arr, @position + 1, @inserted_at
+      return build_next_partial_solution arr, @position + 1, @inserted_at
     end
+  end
+
+  def build_next_partial_solution(arr, position, inserted_at)
+    PartialSolution.new arr, position , inserted_at
   end
 
   def solution?
@@ -71,8 +75,12 @@ class PartialSolution
     @arr
   end
 
-  def output
+  def raw
     [@arr, @position, @inserted_at]
+  end
+
+  def ==(other)
+    self.raw == other.raw
   end
 
 end
