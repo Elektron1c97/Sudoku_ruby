@@ -1,4 +1,5 @@
 require_relative '../test_helper'
+require 'timeout'
 
 class HumanSolverTest < Minitest::Test
   include SudokuRuby::HumanSolver
@@ -149,6 +150,16 @@ class HumanSolverTest < Minitest::Test
       sol = sol.next
     end
   end
+
+  def test_whole_unsolvable_solution
+    sol = AdvancedPartialSolution.new(UNSOLVABLE_INPUT)
+    Timeout::timeout(1) do
+      until sol == :unsolvable
+        sol = sol.next
+      end
+    end
+  end
+
 end
 
 class PartialSolutionCollectionTest < Minitest::Test
@@ -182,7 +193,7 @@ class PartialSolutionCollectionTest < Minitest::Test
   class UnsolvablePartialSolution < DummyPartialSolution
     def next
       super
-      raise SudokuRuby::HumanSolver::SudokuUnsolvable
+      :unsolvable
     end
   end
 

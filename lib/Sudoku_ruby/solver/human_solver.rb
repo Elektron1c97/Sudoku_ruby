@@ -2,9 +2,6 @@ module SudokuRuby
 
   module HumanSolver
 
-    class SudokuTooHardError < StandardError; end
-    class SudokuUnsolvable < StandardError; end
-
     class PartialSolution
 
       def initialize(arr_to_solve, position = 0)
@@ -29,7 +26,6 @@ module SudokuRuby
           return :unsolvable
         else
           return :too_hard
-          # raise SudokuTooHardError.new "This sudoku is too hard for me, use AdvancedPartialSolution"
         end
       end
 
@@ -91,7 +87,9 @@ module SudokuRuby
       end
 
       def ==(other)
-        to_a == other.to_a
+        if other.is_a?(self.class)
+          to_a == other.to_a
+        end
       end
 
     end
@@ -107,7 +105,7 @@ module SudokuRuby
               self.class.new arr_cpy
             end
           end
-          return PartialSolutionCollection.new a
+          PartialSolutionCollection.new a
         else
           result
         end
@@ -124,14 +122,15 @@ module SudokuRuby
 
       def next
         other_guesses = @solutions[1..-1]
-        begin
-          self.class.new [@solutions.first.next] + other_guesses
-        rescue SudokuUnsolvable
+        case result = @solutions.first.next
+        when :unsolvable
           if other_guesses.size == 1
             other_guesses.first
           else
             self.class.new other_guesses
           end
+        else
+          self.class.new [result] + other_guesses
         end
       end
 
