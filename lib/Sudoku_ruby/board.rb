@@ -9,6 +9,16 @@ module SudokuRuby
       @field_size = Math.sqrt(length).to_i
     end
 
+    # Solve the board and get the solution
+    def solve(type = BacktrackBruteForceSolver)
+      type.solve(@input)
+    end
+
+    # Solve the board by setting the solution to the current code on the board
+    def solve!(type = BacktrackBruteForceSolver)
+      @input = type.solve(@input)
+    end
+
     # Checks the board for its validation (Sudoku rules)
     def valid?
       (rows.all? &method(:valid_sequence?)) && (columns.all? &method(:valid_sequence?)) && (field_groups.all? &method(:valid_sequence?))
@@ -16,7 +26,11 @@ module SudokuRuby
 
     # Returns all rows of the board
     def rows
-      @input.each_slice(@length).to_a
+      @rows ||= @input.each_slice(@length).to_a
+    end
+
+    def row(index)
+      rows[index]
     end
 
     # Returns all rows of the board
@@ -26,6 +40,10 @@ module SudokuRuby
       end
     end
 
+    def column(index)
+      columns[index]
+    end
+
     # Returns all field groups of the board
     def field_groups
       slices = @input.each_slice(@field_size).each_slice(@length).to_a
@@ -33,6 +51,10 @@ module SudokuRuby
       slices.flat_map do |e|
         block_indexes.map { |indexes| indexes.flat_map { |i| e[i] } }
       end
+    end
+
+    def field_group(index)
+      field_groups[index]
     end
 
     # Generates block indexes for the field groups
