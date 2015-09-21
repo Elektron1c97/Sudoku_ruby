@@ -1,6 +1,9 @@
 module SudokuRuby
   # A board represents a Sudoku board (of any length)
   class Board
+    @@field_group_indexes = {}
+    @@column_indexes = {}
+    @@row_indexes = {}
     attr_accessor :input, :length
 
     def initialize(input = Generator.generate_code, length = 9)
@@ -26,44 +29,102 @@ module SudokuRuby
 
     # Returns all rows of the board
     def rows
-      @rows ||= @input.each_slice(@length).to_a
+      @rows ||= begin
+        row_indexes.map do |e|
+          e.map do |e|
+            @input[e]
+          end
+        end
+      end
     end
 
     def row(index)
-      rows[index]
+      row_indexes(index).map do |e|
+        @input[e]
+      end
     end
 
     # Returns all rows of the board
     def columns
-      rows.map.with_index do |_row, index|
-        rows.map { |r| r[index] }
+      @columns ||= begin
+        column_indexes.map do |e|
+          e.map do |e|
+            @input[e]
+          end
+        end
       end
     end
 
     def column(index)
-      columns[index]
+      column_indexes(index).map do |e|
+        @input[e]
+      end
     end
 
     # Returns all field groups of the board
     def field_groups
-      slices = @input.each_slice(@field_size).each_slice(@length).to_a
-      block_indexes = generate_block_indexes
-      slices.flat_map do |e|
-        block_indexes.map { |indexes| indexes.flat_map { |i| e[i] } }
+      @field_groups ||= begin
+        field_group_indexes.map do |e|
+          e.map do |e|
+            @input[e]
+          end
+        end
       end
     end
 
     def field_group(index)
-      field_groups[index]
+      field_group_indexes(index).map do |e|
+        @input[e]
+      end
     end
 
     # Generates block indexes for the field groups
-    def generate_block_indexes
-      # [[0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15]] <- 16x16
-      # [[0, 3, 6], [1, 4, 7], [2, 5, 8]] <- 9x9
-      # [[0, 2], [1, 3]] <- 4x4
-      base = @length / @field_size
-      base.times.map { |count| base.times.map { |c| count + (base * c) } }
+    def field_group_indexes(get_at = nil)
+      # 9x9 -> [[0,1,2,9,10,11,18,19,20], [3,4,5,12,13,14,21,22,23], ..... ]
+      @@field_group_indexes[@length] ||= begin
+        base = @length / @field_size
+        temp_indexes = base.times.map { |count| base.times.map { |c| count + (base * c) } }
+        max_index = (length ** 2) - 1
+        field_group_rows = (0..max_index).to_a.each_slice(@field_size).each_slice(@length).to_a
+        indexes = field_group_rows.flat_map do |e|
+          temp_indexes.map { |indexes| indexes.flat_map { |i| e[i]} }
+        end
+      end
+      if get_at
+        @@field_group_indexes[@length][get_at]
+      else
+        @@field_group_indexes[@length]
+      end
+    end
+
+    def column_indexes(get_at = nil)
+      @@column_indexes[@length] ||= begin
+        @length.times.map do |count|
+          @length.times.map do |inner_count|
+            inner_count * @length + count
+          end
+        end
+      end
+      if get_at
+        @@column_indexes[@length][get_at]
+      else
+        @@column_indexes[@length]
+      end
+    end
+
+    def row_indexes(get_at = nil)
+      @@row_indexes[@length] ||= begin
+        @length.times.map do |count|
+          @length.times.map do |inner_count|
+            inner_count + (count * @length)
+          end
+        end
+      end
+      if get_at
+        @@row_indexes[@length][get_at]
+      else
+        @@row_indexes[@length]
+      end
     end
 
     # Check for a valid sequence, e.g. 9x9 sudoku a sequence can only contain one of each (1-9 uniqness) and only 1-9 is allowed
