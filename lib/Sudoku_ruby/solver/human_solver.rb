@@ -35,7 +35,11 @@ module SudokuRuby
 
       def free_nums_for_index_and_input(index, input)
         b = Board.new(input, 9)
-        (1..9).to_a - [b.row(row_for_index(index)), b.column(col_for_index(index)), b.field_group(field_group_for_index(index))].flatten.compact.uniq
+        possibilities = (1..9).to_a
+        possibilities -= b.row(row_for_index(index))
+        possibilities -= b.column(col_for_index(index))
+        possibilities -= b.field_group(field_group_for_index(index))
+        possibilities
       end
 
       def free_nums_for_current_field

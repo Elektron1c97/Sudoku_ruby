@@ -44,15 +44,15 @@ class HumanSolverTest < Minitest::Test
                      nil, 7, nil, nil, 4, nil, nil, nil, nil,
                      6, nil, nil, 2, 1, nil, nil, 9, nil]
 
-   UNSOLVABLE_INPUT = [ 5, 1, 6, 8, 4, 9, 7, 3, 2,
-                        3, nil, 7, 6, nil, 5, nil, nil, nil,
-                        8, nil, 9, 7, nil, nil, nil, 6, 5,
-                        1, 3, 5, nil, 6, nil, 9, nil, 7,
-                        4, 7, 2, 5, 9, 1, nil, nil, 6,
-                        9, 6, 8, 3, 7, nil, nil, 5, nil,
-                        2, 5, 3, 1, 8, 6, nil, 7, 4,
-                        6, 8, 4, 2, nil, 7, 5, nil, nil,
-                        7, 9, 1, nil, 5, nil, 6, nil, 8]
+  UNSOLVABLE_INPUT = [5, 1, 6, 8, 4, 9, 7, 3, 2,
+                      3, nil, 7, 6, nil, 5, nil, nil, nil,
+                      8, nil, 9, 7, nil, nil, nil, 6, 5,
+                      1, 3, 5, nil, 6, nil, 9, nil, 7,
+                      4, 7, 2, 5, 9, 1, nil, nil, 6,
+                      9, 6, 8, 3, 7, nil, nil, 5, nil,
+                      2, 5, 3, 1, 8, 6, nil, 7, 4,
+                      6, 8, 4, 2, nil, 7, 5, nil, nil,
+                      7, 9, 1, nil, 5, nil, 6, nil, 8]
 
   def test_first_row
     sol = PartialSolution.new(RETARD_INPUT, 5)
@@ -125,9 +125,7 @@ class HumanSolverTest < Minitest::Test
 
   def test_solving_empty_board
     sol = AdvancedPartialSolution.new([nil] * 81)
-    until sol.solution?
-      sol = sol.next
-    end
+    sol = sol.next until sol.solution?
     board = SudokuRuby::Board.new(sol.to_a)
     assert board.valid?
   end
@@ -137,8 +135,8 @@ class HumanSolverTest < Minitest::Test
     assert sol.next.is_a?(PartialSolutionCollection), "Expected PartialSolutionCollection, got: #{sol.class}"
   end
 
-  def test_unsolvable_solution_raises_exception
-    data = [1,2,3,4,5,6,7,8,9] * 9
+  def test_unsolvable_solution_returns_unsolvable_symbol
+    data = [1, 2, 3, 4, 5, 6, 7, 8, 9] * 9
     data.pop
     sol = AdvancedPartialSolution.new(data + [nil])
     assert_equal :unsolvable, sol.next
@@ -146,21 +144,17 @@ class HumanSolverTest < Minitest::Test
 
   def test_whole_solution_for_very_hard_input
     sol = AdvancedPartialSolution.new(VERY_HARD_INPUT)
-    until sol.solution?
-      sol = sol.next
-    end
+    sol = sol.next until sol.solution?
+  end
+
   end
 
   def test_whole_unsolvable_solution
     sol = AdvancedPartialSolution.new(UNSOLVABLE_INPUT)
-    Timeout::timeout(1) do
-      until sol == :unsolvable
-        sol = sol.next
-      end
+    Timeout.timeout(1) do
+      sol = sol.next until sol == :unsolvable
     end
   end
-
-end
 
 class PartialSolutionCollectionTest < Minitest::Test
   include SudokuRuby::HumanSolver
