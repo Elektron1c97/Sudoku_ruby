@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class SolverTest < Minitest::Test
+class BruteForceSolverTest < Minitest::Test
   include SudokuRuby
 
   def make_board(*items)
