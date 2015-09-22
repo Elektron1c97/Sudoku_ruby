@@ -98,4 +98,40 @@ class SequenceTest < Minitest::Test
     temp_test_board = SudokuRuby::Board.new([5, 3, 4, 6, 7, 8, 9, 1, 2, 6, 7, 2, 1, 9, 5, 3, 4, 8, 1, 9, 8, 3, 4, 2, 5, 6, 7, 8, 5, 9, 7, 6, 1, 4, 2, 3, 4, 2, 6, 8, 5, 3, 7, 9, 1, 7, 1, 3, 9, 2, 4, 8, 5, 6, 9, 6, 1, 5, 3, 7, 2, 8, 4, 2, 8, 7, 4, 1, 9, 6, 3, 5, 3, 4, 5, 2, 8, 6, 1, 7, 9], 9)
     assert temp_test_board.valid?
   end
+
+  def test_first_row_index
+    assert_equal 0, @default_board.row_index_for_field_index(0)
+  end
+
+  def test_col_index_of_field_in_first_row
+    assert_equal 4, @default_board.column_index_for_field_index(4)
+  end
+
+  def test_row_index_of_random_field
+    assert_equal 4, @default_board.row_index_for_field_index(39)
+  end
+
+  def test_col_index_of_random_field
+    assert_equal 7, @default_board.column_index_for_field_index(43)
+  end
+
+  def test_field_group_index_in_first_field_group
+    assert_equal 1, @default_board.field_group_index_for_field_index(4)
+  end
+
+  def test_field_group_index_in_fourth_field_group
+    assert_equal 4, @default_board.field_group_index_for_field_index(39)
+  end
+
+  def test_field_group_for_index
+    assert_equal [1,2,3,1,2,3,1,2,3], @default_board.field_group_for_field_index(10)
+  end
+
+  def test_row_for_index
+    assert_equal (1..9).to_a, @default_board.row_for_field_index(4)
+  end
+
+  def test_column_for_index
+    assert_equal  [4] * 9, @default_board.column_for_field_index(3)
+  end
 end

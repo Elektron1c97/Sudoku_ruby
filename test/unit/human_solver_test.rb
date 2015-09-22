@@ -54,35 +54,7 @@ class HumanSolverTest < Minitest::Test
                       6, 8, 4, 2, nil, 7, 5, nil, nil,
                       7, 9, 1, nil, 5, nil, 6, nil, 8]
 
-  def test_first_row
-    sol = PartialSolution.new(RETARD_INPUT, 5)
-    assert_equal 0, sol.current_row
-  end
 
-  def test_col_of_field_in_first_row
-    sol = PartialSolution.new(RETARD_INPUT, 4)
-    assert_equal 4, sol.current_col
-  end
-
-  def test_row_of_random_field
-    sol = PartialSolution.new(RETARD_INPUT, 39)
-    assert_equal 4, sol.current_row
-  end
-
-  def test_col_of_random_field
-    sol = PartialSolution.new(RETARD_INPUT, 43)
-    assert_equal 7, sol.current_col
-  end
-
-  def test_field_group_in_first_field_group
-    sol = PartialSolution.new(RETARD_INPUT, 4)
-    assert_equal 1, sol.current_field_group
-  end
-
-  def test_field_group_in_fourth_field_group
-    sol = PartialSolution.new(RETARD_INPUT, 39)
-    assert_equal 4, sol.current_field_group
-  end
 
   def test_empty_fields_for_input_indexes
     sol = PartialSolution.new(RETARD_INPUT, 39)
@@ -91,7 +63,7 @@ class HumanSolverTest < Minitest::Test
 
   def test_free_nums_for_first_empty_field
     sol = PartialSolution.new(RETARD_INPUT)
-    assert_equal [4], sol.free_nums_for_current_field
+    assert_equal [4], sol.free_nums_for_index(16)
   end
 
   def test_insert_all_with_only_one_possibility
