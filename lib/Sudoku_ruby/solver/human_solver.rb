@@ -2,35 +2,67 @@ module SudokuRuby
 
   module HumanSolver
 
-    class PartialSolution
+    def self.solve(input)
+      sol = PartialSolution.new(input)
+      sol = sol.next until sol == :unsolvable || sol == :too_hard || sol.solution?
+      case sol
+      when :too_hard
+        raise StandardError.new "Please use solve_no_matter_what to solve such a hard input"
+      when :unsolvable
+        nil
+      else
+        sol.to_a
+      end
+    end
 
+    def self.solve_no_matter_what(input)
+      sol = AdvancedPartialSolution.new(input)
+      sol = sol.next until sol == :unsolvable || sol.solution?
+      if sol == :unsolvable
+        nil
+      else
+        sol.to_a
+      end
+    end
+
+    class PartialSolution
       def initialize(arr_to_solve, position = 0)
         @position = position
         @arr = arr_to_solve
         @empty_fields = empty_field_indexes
-        @start_point = find_start_index
+        @start_point = best_move
       end
 
       def next
-        if find_start_index.values.first.length == 1
+        move = best_move
+        case move.last.length
+        when 1
           a = @arr.map.with_index do |e, i|
             if @empty_fields.include?(i)
-              free_nums = free_nums_for_index_and_input(i, @arr)
+              free_nums = possibilities[i]
               free_nums.first if free_nums.length == 1
             else
               e
             end
           end
           return self.class.new a
-        elsif find_start_index.values.first.length == 0
+        when 0
           return :unsolvable
         else
           return :too_hard
         end
       end
 
-      def find_start_index
-        @empty_fields.map { |e| { e => free_nums_for_index_and_input(e, @arr) } }.sort { |x, y| x.values.first.length <=> y.values.first.length}.first
+      def possibilities
+        @possibilities ||= begin
+          data = {}
+          @empty_fields.each { |e| data[e] = free_nums_for_index_and_input(e, @arr) }
+          data
+        end
+      end
+
+      def best_move
+        @best_move ||= possibilities.min_by { |_idx, nums| nums.length }
       end
 
       def free_nums_for_index_and_input(index, input)
@@ -91,25 +123,16 @@ module SudokuRuby
       end
 
       def ==(other)
-        if other.is_a?(self.class)
-          to_a == other.to_a
-        end
+        to_a == other.to_a if other.is_a?(self.class)
       end
-
     end
 
     class AdvancedPartialSolution < PartialSolution
       def next
         case result = super
         when :too_hard
-          a = find_start_index.flat_map do |index, available|
-            available.map do |a|
-              arr_cpy = @arr.dup
-              arr_cpy[index] = a
-              self.class.new arr_cpy
-            end
-          end
-          PartialSolutionCollection.new a
+          index, available = *best_move
+          a = available.map { |a| arr_cpy = @arr.dup; arr_cpy[index] = a; self.class.new(arr_cpy); } ; PartialSolutionCollection.new a
         else
           result
         end
@@ -146,12 +169,20 @@ module SudokuRuby
         @solutions.first.to_a
       end
 
+      def unwrap
+        sol = @solutions.first
+        if self.class === sol
+          sol.unwrap
+        else
+          sol
+        end
+      end
+
       def ==(other)
         if other.is_a?(self.class)
-          @solutions == other.instance_variable_get("@solutions")
+          @solutions == other.instance_variable_get('@solutions')
         end
       end
     end
-
   end
 end

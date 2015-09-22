@@ -126,11 +126,10 @@ class HumanSolverTest < Minitest::Test
   def test_solving_empty_board
     sol = AdvancedPartialSolution.new([nil] * 81)
     sol = sol.next until sol.solution?
-    board = SudokuRuby::Board.new(sol.to_a)
-    assert board.valid?
+    assert SudokuRuby::Board.new(sol.to_a).valid?
   end
 
-  def test_collection_if_only_two_or_more_possibilites
+  def test_collection_is_created_if_only_two_or_more_possibilites_on_every_field
     sol = AdvancedPartialSolution.new(VERY_HARD_INPUT)
     assert sol.next.is_a?(PartialSolutionCollection), "Expected PartialSolutionCollection, got: #{sol.class}"
   end
@@ -145,8 +144,7 @@ class HumanSolverTest < Minitest::Test
   def test_whole_solution_for_very_hard_input
     sol = AdvancedPartialSolution.new(VERY_HARD_INPUT)
     sol = sol.next until sol.solution?
-  end
-
+    assert SudokuRuby::Board.new(sol.to_a).valid?
   end
 
   def test_whole_unsolvable_solution
@@ -155,6 +153,30 @@ class HumanSolverTest < Minitest::Test
       sol = sol.next until sol == :unsolvable
     end
   end
+
+  def test_solve_function_should_throw_error_because_of_too_hard_input
+    assert_raises StandardError do
+      SudokuRuby::HumanSolver.solve(VERY_HARD_INPUT)
+    end
+  end
+
+  def test_solve_function_should_return_nil_because_of_unsolvable_input
+    assert_equal nil, SudokuRuby::HumanSolver.solve_no_matter_what(UNSOLVABLE_INPUT)
+  end
+
+  def test_solve_function_should_return_solved_sudoku
+    hard_input_solved = [1, 2, 3, 4, 5, 7, 6, 8, 9, 4, 5, 7, 8, 6, 9, 1, 2, 3, 6, 8, 9, 2, 1, 3, 4, 5, 7, 3, 4, 1, 7, 8, 6, 2, 9, 5, 5, 6, 8, 9, 2, 1, 3, 7, 4, 7, 9, 2, 3, 4, 5, 8, 1, 6, 2, 3, 5, 1, 9, 4, 7, 6, 8, 8, 7, 6, 5, 3, 2, 9, 4, 1, 9, 1, 4, 6, 7, 8, 5, 3, 2]
+    assert_equal hard_input_solved, SudokuRuby::HumanSolver.solve(HARD_INPUT)
+  end
+
+  def test_solve_function_should_return_very_hard_solved_sudoku_used_with_solve_no_matter_what_function
+    very_hard_input_solved = [5, 1, 9, 7, 2, 6, 8, 4, 3, 7, 4, 6, 3, 5, 8, 9, 2, 1, 3, 8, 2, 1, 9, 4, 7, 6, 5, 1, 6, 7, 9, 3, 5, 2, 8, 4, 9, 5, 4, 6, 8, 2, 3, 1, 7, 8, 2, 3, 4, 7, 1, 6, 5, 9, 4, 9, 8, 5, 6, 3, 1, 7, 2, 2, 7, 1, 8, 4, 9, 5, 3, 6, 6, 3, 5, 2, 1, 7, 4, 9, 8]
+    assert_equal very_hard_input_solved, SudokuRuby::HumanSolver.solve_no_matter_what(VERY_HARD_INPUT)
+  end
+
+end
+
+
 
 class PartialSolutionCollectionTest < Minitest::Test
   include SudokuRuby::HumanSolver
@@ -214,4 +236,5 @@ class PartialSolutionCollectionTest < Minitest::Test
     collection = PartialSolutionCollection.new(solutions)
     assert_equal other_guess, collection.next
   end
+
 end
